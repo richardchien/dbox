@@ -6,19 +6,24 @@ import org.junit.Test;
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
  */
 public class ExampleUnitTest {
+//    @Test
+//    public void addition_isCorrect() throws Exception {
+//        Condition condition = new Condition()
+//                .between("id", "2", "7")
+//                .and()
+//                .group()
+//                .greaterThan("id", "3")
+//                .and()
+//                .like("city", "%jing")
+//                .or()
+//                .in("city", "Berlin", "Paris")
+//                .endGroup();
+//        System.out.println(condition.build());
+//        System.out.println(condition.getArgList());
+//    }
+
     @Test
-    public void addition_isCorrect() throws Exception {
-        Condition condition = new Condition()
-                .between("id", "2", "7")
-                .and()
-                .group()
-                .greaterThan("id", "3")
-                .and()
-                .like("city", "%jing")
-                .or()
-                .in("city", "Berlin", "Paris")
-                .endGroup();
-        System.out.println(condition.build());
-        System.out.println(condition.getArgList());
+    public void TableInfo_of() throws Exception {
+        TableInfo info = TableInfo.of(Student.class);
     }
 }

@@ -8,8 +8,8 @@ import java.util.List;
  * Created by richard on 7/15/16.
  */
 public class Condition {
-//    private StringBuilder mConditionBuilder;
-//    private List<String> mArgList;
+    private StringBuilder mConditionBuilder;
+    private List<String> mArgList;
     private int mGroupDepth = 0;
 
     public Condition() {
