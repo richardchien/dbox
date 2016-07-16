@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "im.r_c.android.dbox"
+        applicationId "im.r_c.android.dbox.sample"
         minSdkVersion 14
         targetSdkVersion 24
         versionCode 1

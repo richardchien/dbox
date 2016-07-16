@@ -1,4 +1,4 @@
-package im.r_c.android.dbox;
+package im.r_c.android.dbox.sample;
 
 import org.junit.Test;
 
