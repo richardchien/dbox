@@ -12,7 +12,7 @@ import im.r_c.android.dbox.annotation.Table;
  * Created by richard on 7/16/16.
  */
 @Table("Student")
-public class Student {
+class Student {
     private long id;
 
     @Column(notNull = true)
@@ -21,13 +21,14 @@ public class Student {
     @ObjectColumn(Course.class)
     private List<Course> courseList;
 
+    @ObjectColumn(Course.class)
+    private Course[] favoriteCourses;
+
+    @ObjectColumn(Clazz.class)
+    private Clazz clazz;
+
     public Student() {
         courseList = new ArrayList<>();
-    }
-
-    public Student(String name, List<Course> courseList) {
-        this.name = name;
-        this.courseList = courseList;
     }
 
     public long getId() {
@@ -48,6 +49,22 @@ public class Student {
 
     public boolean removeCourse(Course course) {
         return courseList.remove(course);
+    }
+
+    public Course[] getFavoriteCourses() {
+        return favoriteCourses;
+    }
+
+    public void setFavoriteCourses(Course[] favoriteCourses) {
+        this.favoriteCourses = favoriteCourses;
+    }
+
+    public Clazz getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(Clazz clazz) {
+        this.clazz = clazz;
     }
 
     @Override

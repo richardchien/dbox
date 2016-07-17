@@ -43,13 +43,7 @@ class TableInfo {
      */
     static TableInfo of(Class<?> clz) {
         TableInfo ti = new TableInfo();
-
-        Table table = clz.getAnnotation(Table.class);
-        if (table == null) {
-            throw new IllegalArgumentException("Did you forget to add \"@Table\" annotation to class \"" + clz + "\"?");
-        }
-        String tableName = table.value();
-        ti.mName = "".equals(tableName) ? clz.getSimpleName() : tableName;
+        ti.mName = nameOf(clz);
 
         Field[] fields = clz.getDeclaredFields();
         ti.mColumnMap = new HashMap<>();
@@ -92,6 +86,15 @@ class TableInfo {
         }
 
         return ti;
+    }
+
+    static String nameOf(Class<?> clz) {
+        Table table = clz.getAnnotation(Table.class);
+        if (table == null) {
+            throw new IllegalArgumentException("Did you forget to add \"@Table\" annotation to class \"" + clz + "\"?");
+        }
+        String tableName = table.value();
+        return "".equals(tableName) ? clz.getSimpleName() : tableName;
     }
 }
 

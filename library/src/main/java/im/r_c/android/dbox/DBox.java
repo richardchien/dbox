@@ -1,5 +1,6 @@
 package im.r_c.android.dbox;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -7,7 +8,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,79 +51,163 @@ public class DBox<T> {
     }
 
     public boolean save(T t) {
-        Map<String, ColumnInfo> cm = mTableInfo.mColumnMap;
-
-        long id = 0;
-        try {
-            id = cm.get(TableInfo.COLUMN_ID).mField.getLong(t);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        if (id > 0) {
-            // Record already exists
-            return update(t);
-        }
-
-        Log.d(TAG, buildCreateTableSQL(mTableInfo));
-        //TODO: Save record
-
-        return false;
+        return saveInternal(t);
     }
 
-    private boolean update(T t) {
-        return false;
+    private boolean saveInternal(Object obj) {
+        long id = getId(obj, mClass);
+        if (id > 0) {
+            // Record already exists
+            return update(obj);
+        }
+
+        // Create table if not exists
+        if (!DBUtils.isTableExists(mDb, mTableInfo.mName)) {
+            String sql = SQLBuilder.createTable(mTableInfo);
+            mDb.execSQL(sql);
+        }
+
+        // Create mapping tables if not exist
+        if (mTableInfo.mObjectColumnMap.size() > 0) {
+            // Has object column
+            boolean hasMappingTableNotCreated = false;
+            for (ObjectColumnInfo oci : mTableInfo.mObjectColumnMap.values()) {
+                // Check if all mapping tables are created
+                if (!DBUtils.isTableExists(mDb, SQLBuilder.getMappingTableName(mTableInfo.mName, TableInfo.nameOf(oci.mElemClass)))) {
+                    hasMappingTableNotCreated = true;
+                    break;
+                }
+            }
+            if (hasMappingTableNotCreated) {
+                String[] sqls = SQLBuilder.createAllMappingTables(mTableInfo);
+                for (String sql : sqls) {
+                    mDb.execSQL(sql);
+                }
+            }
+        }
+
+        boolean ok = false;
+        try {
+            mDb.beginTransaction();
+
+            // Insert values into this table
+            ContentValues values = SQLBuilder.buildContentValues(mTableInfo, obj);
+            id = mDb.insert(mTableInfo.mName, null, values);
+            if (id <= 0) {
+                throw new Exception();
+            }
+            // Inserted successfully
+            setId(obj, mClass, id);
+
+            // Insert relationship mappings into mapping tables
+            // Example:
+            // _TableA_field1_id  _TableA_field2_id  _TableB_id
+            //        1                   0               2
+            //        0                   1               2
+            //        0                   1               3
+            for (Map.Entry<String, ObjectColumnInfo> entry : mTableInfo.mObjectColumnMap.entrySet()) {
+                ObjectColumnInfo oci = entry.getValue();
+                String fieldName = entry.getKey();
+
+                if (!oci.mField.isAccessible()) {
+                    oci.mField.setAccessible(true);
+                }
+
+                switch (oci.mType) {
+                    case ObjectColumnInfo.TYPE_OBJECT: {
+                        Object o = oci.mField.get(obj);
+                        if (o == null) {
+                            break;
+                        }
+                        handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                        break;
+                    }
+                    case ObjectColumnInfo.TYPE_OBJECT_ARRAY: {
+                        Object arr = oci.mField.get(obj);
+                        if (arr == null || Array.getLength(arr) == 0) {
+                            break;
+                        }
+                        for (int i = 0; i < Array.getLength(arr); i++) {
+                            Object o = Array.get(arr, i);
+                            if (o == null) {
+                                continue;
+                            }
+                            handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                        }
+                        break;
+                    }
+                    case ObjectColumnInfo.TYPE_OBJECT_LIST: {
+                        List list = (List) oci.mField.get(obj);
+                        if (list == null || list.size() == 0) {
+                            break;
+                        }
+                        for (Object o : list) {
+                            if (o == null) {
+                                continue;
+                            }
+                            handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            mDb.setTransactionSuccessful();
+            ok = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDb.endTransaction();
+        }
+
+        return ok;
+    }
+
+    private boolean update(Object obj) {
+        return true;
+    }
+
+    private void handleObjectMapping(String field, long idA, Object objB, Class<?> clzB) throws Exception {
+        long idB = getId(objB, clzB);
+        if (idB <= 0) {
+            throw new Exception();
+        }
+
+        String tableB = TableInfo.nameOf(clzB);
+        if (mDb.insert(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB), null,
+                SQLBuilder.buildMappingContentValues(field, mTableInfo.mName, idA, tableB, idB)) <= 0) {
+            // Insert mapping failed
+            throw new Exception();
+        }
+    }
+
+    private long getId(Object obj, Class<?> clz) {
+        try {
+            Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
+            return f.getLong(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    private void setId(Object obj, Class<?> clz, long id) {
+        try {
+            Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
+            f.setLong(obj, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public DBox<T> where(Condition condition) {
         return this;
-    }
-
-    private String buildCreateTableSQL(TableInfo tableInfo) {
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("CREATE TABLE IF NOT EXISTS ")
-                .append(tableInfo.mName)
-                .append(" (");
-
-        Iterator<ColumnInfo> ciIter = tableInfo.mColumnMap.values().iterator();
-        for (; ; ) {
-            ColumnInfo ci = ciIter.next();
-            sqlBuilder.append(ci.mName).append(" ");
-
-            switch (ci.mType) {
-                case ColumnInfo.TYPE_BOOLEAN:
-                case ColumnInfo.TYPE_BYTE:
-                case ColumnInfo.TYPE_SHORT:
-                case ColumnInfo.TYPE_INT:
-                case ColumnInfo.TYPE_LONG:
-                case ColumnInfo.TYPE_DATE:
-                    sqlBuilder.append("INTEGER");
-                    break;
-                case ColumnInfo.TYPE_FLOAT:
-                case ColumnInfo.TYPE_DOUBLE:
-                    sqlBuilder.append("REAL");
-                    break;
-                case ColumnInfo.TYPE_STRING:
-                    sqlBuilder.append("TEXT");
-                    break;
-                case ColumnInfo.TYPE_BYTE_ARRAY:
-                    sqlBuilder.append("BLOB");
-                    break;
-            }
-
-            sqlBuilder.append(ci.mNotNull ? " NOT NULL" : "")
-                    .append(ci.mUnique ? " UNIQUE" : "")
-                    .append(ci.mPrimaryKey ? " PRIMARY KEY" : "")
-                    .append(ci.mAutoIncrement ? " AUTOINCREMENT" : "");
-
-            if (ciIter.hasNext()) {
-                sqlBuilder.append(", ");
-            } else {
-                break;
-            }
-        }
-
-        sqlBuilder.append(");");
-        return sqlBuilder.toString();
     }
 
 //    private static class Query {

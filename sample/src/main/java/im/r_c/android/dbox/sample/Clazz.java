@@ -5,36 +5,24 @@ import im.r_c.android.dbox.annotation.Table;
 
 /**
  * DBox
- * Created by richard on 7/16/16.
+ * Created by richard on 7/17/16.
  */
 @Table
-class Course {
+class Clazz {
     private long id;
-
-    @Column(notNull = true, unique = true)
-    private String code;
 
     @Column(notNull = true)
     private String name;
 
-    public Course() {
+    public Clazz() {
     }
 
-    public Course(String code, String name) {
-        this.code = code;
+    public Clazz(String name) {
         this.name = name;
     }
 
     public long getId() {
         return id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getName() {
@@ -50,27 +38,24 @@ class Course {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Course course = (Course) o;
+        Clazz aClass = (Clazz) o;
 
-        if (id != course.id) return false;
-        if (code != null ? !code.equals(course.code) : course.code != null) return false;
-        return name != null ? name.equals(course.name) : course.name == null;
+        if (id != aClass.id) return false;
+        return name != null ? name.equals(aClass.name) : aClass.name == null;
 
     }
 
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (code != null ? code.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "Course{" +
+        return "Class{" +
                 "id=" + id +
-                ", code='" + code + '\'' +
                 ", name='" + name + '\'' +
                 '}';
     }
