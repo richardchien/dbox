@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Save
         DBox.init(this, "Test.db");
         Student stu = new Student();
         stu.setName("Richard");
@@ -28,7 +29,12 @@ public class MainActivity extends AppCompatActivity {
         DBox.of(Course.class).save(c1);
         DBox.of(Course.class).save(c2);
         DBox.of(Student.class).save(stu);
+        Log.d(TAG, clazz.getId() + ", " + c1.getId() + ", " + c2.getId() + ", " + stu.getId());
 
-        Log.d(TAG, c1.getId() + ", " + c2.getId() + ", " + stu.getId());
+        // Update
+        stu.setName("Changed");
+        stu.setFavoriteCourses(new Course[]{c2});
+        boolean ok = DBox.of(Student.class).save(stu);
+        Log.d(TAG, "" + ok);
     }
 }

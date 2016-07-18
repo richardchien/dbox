@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
@@ -55,10 +54,11 @@ public class DBox<T> {
     }
 
     private boolean saveInternal(Object obj) {
-        long id = getId(obj, mClass);
-        if (id > 0) {
+        boolean isUpdating = false;
+        long idA = getId(obj, mClass);
+        if (idA > 0) {
             // Record already exists
-            return update(obj);
+            isUpdating = true;
         }
 
         // Create table if not exists
@@ -90,14 +90,35 @@ public class DBox<T> {
         try {
             mDb.beginTransaction();
 
-            // Insert values into this table
+            // Save values into this table
             ContentValues values = SQLBuilder.buildContentValues(mTableInfo, obj);
-            id = mDb.insert(mTableInfo.mName, null, values);
-            if (id <= 0) {
-                throw new Exception();
+            if (isUpdating) {
+                int rowCount = mDb.update(mTableInfo.mName, values, TableInfo.COLUMN_ID + " = ?", new String[]{String.valueOf(idA)});
+                if (rowCount != 1) {
+                    // Effected row count is not 1,
+                    // meaning something went wrong.
+                    throw new Exception();
+                }
+            } else {
+                idA = mDb.insert(mTableInfo.mName, null, values);
+                if (idA <= 0) {
+                    throw new Exception();
+                }
+                setId(obj, mClass, idA);
             }
-            // Inserted successfully
-            setId(obj, mClass, id);
+
+            // If is updating, all previous mappings of this id should be deleted first
+            if (isUpdating) {
+                for (Map.Entry<String, ObjectColumnInfo> entry : mTableInfo.mObjectColumnMap.entrySet()) {
+                    ObjectColumnInfo oci = entry.getValue();
+                    String tableB = TableInfo.nameOf(oci.mElemClass);
+                    String fieldName = entry.getKey();
+
+                    mDb.delete(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB),
+                            SQLBuilder.getMappingTableColumnName(mTableInfo.mName, fieldName) + " = ?",
+                            new String[]{String.valueOf(idA)});
+                }
+            }
 
             // Insert relationship mappings into mapping tables
             // Example:
@@ -119,7 +140,7 @@ public class DBox<T> {
                         if (o == null) {
                             break;
                         }
-                        handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                        handleObjectMapping(fieldName, idA, o, oci.mElemClass);
                         break;
                     }
                     case ObjectColumnInfo.TYPE_OBJECT_ARRAY: {
@@ -132,7 +153,7 @@ public class DBox<T> {
                             if (o == null) {
                                 continue;
                             }
-                            handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                            handleObjectMapping(fieldName, idA, o, oci.mElemClass);
                         }
                         break;
                     }
@@ -145,7 +166,7 @@ public class DBox<T> {
                             if (o == null) {
                                 continue;
                             }
-                            handleObjectMapping(fieldName, id, o, oci.mElemClass);
+                            handleObjectMapping(fieldName, idA, o, oci.mElemClass);
                         }
                         break;
                     }
@@ -161,10 +182,6 @@ public class DBox<T> {
         }
 
         return ok;
-    }
-
-    private boolean update(Object obj) {
-        return true;
     }
 
     private void handleObjectMapping(String field, long idA, Object objB, Class<?> clzB) throws Exception {
