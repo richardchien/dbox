@@ -24,19 +24,37 @@ public class DBox<T> {
 
     private final Class<T> mClass;
     private final TableInfo mTableInfo;
-    //    private Query mQuery;
     private SQLiteDatabase mDb;
 
+    /**
+     * Invisible constructor.
+     *
+     * @param clz       class that represents a table
+     * @param tableInfo table info of the class
+     */
     private DBox(Class<T> clz, TableInfo tableInfo) {
         mClass = clz;
         mTableInfo = tableInfo;
     }
 
+    /**
+     * Initialize DBox.
+     *
+     * @param context      context
+     * @param databaseName filename of database
+     */
     public static void init(Context context, String databaseName) {
         sContextRef = new WeakReference<>(context);
         sDatabaseName = databaseName;
     }
 
+    /**
+     * Obtain a DBox object of a class.
+     *
+     * @param clz class that represents a table
+     * @param <T> type of objects the box can handle
+     * @return a box object
+     */
     public static <T> DBox<T> of(@NonNull Class<T> clz) {
         Context context = sContextRef.get();
         if (context == null) {
@@ -49,6 +67,12 @@ public class DBox<T> {
         return box;
     }
 
+    /**
+     * Save or update (if id > 0) an object.
+     *
+     * @param obj object to save
+     * @return succeeded or not
+     */
     public boolean save(T obj) {
         boolean isUpdating = false;
         long idA = getId(obj, mClass);
@@ -172,6 +196,15 @@ public class DBox<T> {
         return ok;
     }
 
+    /**
+     * Remove an object (must have an id).
+     * <p>
+     * After removing, the object's is will be set to 0,
+     * and can be saved again.
+     *
+     * @param obj object to remove
+     * @return succeeded or not
+     */
     public boolean remove(T obj) {
         long idA = getId(obj, mClass);
         if (idA <= 0) {
@@ -194,6 +227,8 @@ public class DBox<T> {
             // Remove mappings in mapping tables
             deleteAllMappingsOfId(idA);
 
+            setId(obj, mClass, 0);
+
             mDb.setTransactionSuccessful();
             ok = true;
         } catch (Exception e) {
@@ -203,6 +238,43 @@ public class DBox<T> {
         }
 
         return ok;
+    }
+
+    /**
+     * Remove all objects.
+     * <p>
+     * Once a box is cleared, any previous objects with non-zero ids
+     * of the corresponding class should NEVER be used again.
+     *
+     * @return succeeded or not
+     */
+    public boolean clear() {
+        boolean ok = false;
+        try {
+            mDb.beginTransaction();
+
+            // Remove all records in this table
+            mDb.delete(mTableInfo.mName, null, null);
+
+            // Remove all mappings in mapping tables
+            for (Map.Entry<String, ObjectColumnInfo> entry : mTableInfo.mObjectColumnMap.entrySet()) {
+                String tableB = TableInfo.nameOf(entry.getValue().mElemClass);
+                mDb.delete(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB), null, null);
+            }
+
+            mDb.setTransactionSuccessful();
+            ok = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDb.endTransaction();
+        }
+
+        return ok;
+    }
+
+    public boolean drop() {
+        return true;
     }
 
     private void deleteAllMappingsOfId(long id) {
@@ -255,14 +327,6 @@ public class DBox<T> {
             e.printStackTrace();
         }
     }
-
-    public DBox<T> where(Condition condition) {
-        return this;
-    }
-
-//    private static class Query {
-//
-//    }
 
     private static class DatabaseHelper extends SQLiteOpenHelper {
 

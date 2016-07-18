@@ -38,7 +38,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Update: " + ok);
 
         // Remove
-        ok = DBox.of(Student.class).remove(stu);
+        ok = DBox.of(Course.class).remove(c1);
         Log.d(TAG, "Remove: " + ok);
+
+        // Clear
+        ok = DBox.of(Student.class).clear();
+        Log.d(TAG, "Clear: " + ok);
     }
 }
