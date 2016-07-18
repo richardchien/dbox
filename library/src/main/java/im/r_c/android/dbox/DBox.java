@@ -49,11 +49,7 @@ public class DBox<T> {
         return box;
     }
 
-    public boolean save(T t) {
-        return saveInternal(t);
-    }
-
-    private boolean saveInternal(Object obj) {
+    public boolean save(T obj) {
         boolean isUpdating = false;
         long idA = getId(obj, mClass);
         if (idA > 0) {
@@ -109,15 +105,7 @@ public class DBox<T> {
 
             // If is updating, all previous mappings of this id should be deleted first
             if (isUpdating) {
-                for (Map.Entry<String, ObjectColumnInfo> entry : mTableInfo.mObjectColumnMap.entrySet()) {
-                    ObjectColumnInfo oci = entry.getValue();
-                    String tableB = TableInfo.nameOf(oci.mElemClass);
-                    String fieldName = entry.getKey();
-
-                    mDb.delete(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB),
-                            SQLBuilder.getMappingTableColumnName(mTableInfo.mName, fieldName) + " = ?",
-                            new String[]{String.valueOf(idA)});
-                }
+                deleteAllMappingsOfId(idA);
             }
 
             // Insert relationship mappings into mapping tables
@@ -182,6 +170,51 @@ public class DBox<T> {
         }
 
         return ok;
+    }
+
+    public boolean remove(T obj) {
+        long idA = getId(obj, mClass);
+        if (idA <= 0) {
+            // Record hasn't been saved yet
+            return false;
+        }
+
+        boolean ok = false;
+        try {
+            mDb.beginTransaction();
+
+            // Remove record in this table
+            int rowCount = mDb.delete(mTableInfo.mName, TableInfo.COLUMN_ID + " = ?", new String[]{String.valueOf(idA)});
+            if (rowCount != 1) {
+                // Effected row count is not 1,
+                // meaning something went wrong.
+                throw new Exception();
+            }
+
+            // Remove mappings in mapping tables
+            deleteAllMappingsOfId(idA);
+
+            mDb.setTransactionSuccessful();
+            ok = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDb.endTransaction();
+        }
+
+        return ok;
+    }
+
+    private void deleteAllMappingsOfId(long id) {
+        for (Map.Entry<String, ObjectColumnInfo> entry : mTableInfo.mObjectColumnMap.entrySet()) {
+            ObjectColumnInfo oci = entry.getValue();
+            String tableB = TableInfo.nameOf(oci.mElemClass);
+            String fieldName = entry.getKey();
+
+            mDb.delete(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB),
+                    SQLBuilder.getMappingTableColumnName(mTableInfo.mName, fieldName) + " = ?",
+                    new String[]{String.valueOf(id)});
+        }
     }
 
     private void handleObjectMapping(String field, long idA, Object objB, Class<?> clzB) throws Exception {

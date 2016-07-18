@@ -29,12 +29,16 @@ public class MainActivity extends AppCompatActivity {
         DBox.of(Course.class).save(c1);
         DBox.of(Course.class).save(c2);
         DBox.of(Student.class).save(stu);
-        Log.d(TAG, clazz.getId() + ", " + c1.getId() + ", " + c2.getId() + ", " + stu.getId());
+        Log.d(TAG, "Save: " + clazz.getId() + ", " + c1.getId() + ", " + c2.getId() + ", " + stu.getId());
 
         // Update
         stu.setName("Changed");
         stu.setFavoriteCourses(new Course[]{c2});
         boolean ok = DBox.of(Student.class).save(stu);
-        Log.d(TAG, "" + ok);
+        Log.d(TAG, "Update: " + ok);
+
+        // Remove
+        ok = DBox.of(Student.class).remove(stu);
+        Log.d(TAG, "Remove: " + ok);
     }
 }
