@@ -44,5 +44,15 @@ public class MainActivity extends AppCompatActivity {
         // Clear
         ok = DBox.of(Student.class).clear();
         Log.d(TAG, "Clear: " + ok);
+
+        // Drop
+        ok = DBox.of(Student.class).drop();
+        Log.d(TAG, "Drop: " + ok);
+
+        // Re-save after clear and drop
+        DBox.of(Course.class).save(c1);
+        DBox.of(Course.class).save(c2);
+        DBox.of(Student.class).save(stu);
+        Log.d(TAG, "Save: " + clazz.getId() + ", " + c1.getId() + ", " + c2.getId() + ", " + stu.getId());
     }
 }

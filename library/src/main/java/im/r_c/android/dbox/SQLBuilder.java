@@ -204,4 +204,8 @@ class SQLBuilder {
         values.put(getMappingTableColumnName(tableB, null), idB);
         return values;
     }
+
+    static String dropTable(String table) {
+        return "DROP TABLE IF EXISTS " + table + ";";
+    }
 }

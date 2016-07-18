@@ -68,7 +68,11 @@ public class DBox<T> {
     }
 
     /**
-     * Save or update (if id > 0) an object.
+     * Save or update (if already exists) an object.
+     * <p>
+     * This will change the object's id
+     * if the object does not exist before
+     * or it has been removed by {@link #clear()} or {@link #drop()}.
      *
      * @param obj object to save
      * @return succeeded or not
@@ -81,55 +85,59 @@ public class DBox<T> {
             isUpdating = true;
         }
 
-        // Create table if not exists
-        if (!DBUtils.isTableExists(mDb, mTableInfo.mName)) {
-            String sql = SQLBuilder.createTable(mTableInfo);
-            mDb.execSQL(sql);
-        }
-
-        // Create mapping tables if not exist
-        if (mTableInfo.mObjectColumnMap.size() > 0) {
-            // Has object column
-            boolean hasMappingTableNotCreated = false;
-            for (ObjectColumnInfo oci : mTableInfo.mObjectColumnMap.values()) {
-                // Check if all mapping tables are created
-                if (!DBUtils.isTableExists(mDb, SQLBuilder.getMappingTableName(mTableInfo.mName, TableInfo.nameOf(oci.mElemClass)))) {
-                    hasMappingTableNotCreated = true;
-                    break;
-                }
-            }
-            if (hasMappingTableNotCreated) {
-                String[] sqls = SQLBuilder.createAllMappingTables(mTableInfo);
-                for (String sql : sqls) {
-                    mDb.execSQL(sql);
-                }
-            }
-        }
-
         boolean ok = false;
         try {
             mDb.beginTransaction();
+
+            // Create table if not exists
+            if (!DBUtils.isTableExists(mDb, mTableInfo.mName)) {
+                String sql = SQLBuilder.createTable(mTableInfo);
+                mDb.execSQL(sql);
+            }
+
+            // Create mapping tables if not exist
+            if (mTableInfo.mObjectColumnMap.size() > 0) {
+                // Has object column
+                boolean hasMappingTableNotCreated = false;
+                for (ObjectColumnInfo oci : mTableInfo.mObjectColumnMap.values()) {
+                    // Check if all mapping tables are created
+                    if (!DBUtils.isTableExists(mDb, SQLBuilder.getMappingTableName(mTableInfo.mName, TableInfo.nameOf(oci.mElemClass)))) {
+                        hasMappingTableNotCreated = true;
+                        break;
+                    }
+                }
+                if (hasMappingTableNotCreated) {
+                    String[] sqls = SQLBuilder.createAllMappingTables(mTableInfo);
+                    for (String sql : sqls) {
+                        mDb.execSQL(sql);
+                    }
+                }
+            }
 
             // Save values into this table
             ContentValues values = SQLBuilder.buildContentValues(mTableInfo, obj);
             if (isUpdating) {
                 int rowCount = mDb.update(mTableInfo.mName, values, TableInfo.COLUMN_ID + " = ?", new String[]{String.valueOf(idA)});
-                if (rowCount != 1) {
+                if (rowCount == 0) {
+                    // The record does not exist in fact,
+                    // so insert it.
+                    isUpdating = false;
+                } else if (rowCount != 1) {
                     // Effected row count is not 1,
                     // meaning something went wrong.
                     throw new Exception();
                 }
-            } else {
+
+                // If is updating, all previous mappings of this id should be deleted first
+                deleteAllMappingsOfId(idA);
+            }
+            if (!isUpdating) {
+                // Newly insert
                 idA = mDb.insert(mTableInfo.mName, null, values);
                 if (idA <= 0) {
                     throw new Exception();
                 }
                 setId(obj, mClass, idA);
-            }
-
-            // If is updating, all previous mappings of this id should be deleted first
-            if (isUpdating) {
-                deleteAllMappingsOfId(idA);
             }
 
             // Insert relationship mappings into mapping tables
@@ -199,8 +207,7 @@ public class DBox<T> {
     /**
      * Remove an object (must have an id).
      * <p>
-     * After removing, the object's is will be set to 0,
-     * and can be saved again.
+     * After removing, the object's id will be set to 0.
      *
      * @param obj object to remove
      * @return succeeded or not
@@ -241,10 +248,11 @@ public class DBox<T> {
     }
 
     /**
+     * (CAUTIOUS!!)
      * Remove all objects.
      * <p>
-     * Once a box is cleared, any previous objects with non-zero ids
-     * of the corresponding class should NEVER be used again.
+     * After a box being cleared, re-saving previous objects with non-zero ids
+     * of the corresponding class will give them new ids.
      *
      * @return succeeded or not
      */
@@ -273,8 +281,36 @@ public class DBox<T> {
         return ok;
     }
 
+    /**
+     * (CAUTIOUS!!)
+     * Drop the table of this box
+     * and all mapping tables entirely.
+     * <p>
+     * After a box being dropped, re-saving previous objects with non-zero ids
+     * of the corresponding class will give them new ids.
+     *
+     * @return succeeded or not
+     */
     public boolean drop() {
-        return true;
+        boolean ok = false;
+        try {
+            mDb.beginTransaction();
+
+            mDb.execSQL(SQLBuilder.dropTable(mTableInfo.mName));
+
+            for (ObjectColumnInfo oci : mTableInfo.mObjectColumnMap.values()) {
+                String tableB = TableInfo.nameOf(oci.mElemClass);
+                mDb.execSQL(SQLBuilder.dropTable(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB)));
+            }
+
+            mDb.setTransactionSuccessful();
+            ok = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            mDb.endTransaction();
+        }
+        return ok;
     }
 
     private void deleteAllMappingsOfId(long id) {
