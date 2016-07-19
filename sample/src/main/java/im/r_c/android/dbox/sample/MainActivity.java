@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                         .between("id", "10", "50")
                         .or()
                         .equalTo("id", "90"))
-                .orderBy("name")
+                .orderByDesc("name")
                 .orderBy("id")
                 .results()
                 .some(new DBoxResults.Filter<Student>() {

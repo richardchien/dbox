@@ -34,6 +34,14 @@ public class DBoxQuery<T> {
         return this;
     }
 
+    public DBoxQuery<T> orderByDesc(String... fields) {
+        for (String field : fields) {
+            mOrderBulder.append(mOrderBulder.length() == 0 ? "" : ", ")
+                    .append(mTableInfo.mName).append(".").append(field).append(" DESC");
+        }
+        return this;
+    }
+
     public DBoxResults<T> results() {
         Pair<String, String[]> pair = SQLBuilder.query(mTableInfo, mCondition, mOrderBulder);
         Log.d(TAG, pair.first);
