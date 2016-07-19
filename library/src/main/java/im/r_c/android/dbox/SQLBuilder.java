@@ -1,6 +1,7 @@
 package im.r_c.android.dbox;
 
 import android.content.ContentValues;
+import android.util.Pair;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -207,5 +208,93 @@ class SQLBuilder {
 
     static String dropTable(String table) {
         return "DROP TABLE IF EXISTS " + table + ";";
+    }
+
+    static Pair<String, String[]> query(TableInfo tableInfo, DBoxCondition condition, StringBuilder orderBuilder) {
+        // Example:
+        //
+        // SELECT * FROM Student
+        //   LEFT JOIN Course
+        //   LEFT JOIN _Student_Course_mapping
+        //   LEFT JOIN Clazz
+        //   LEFT JOIN _Student_Clazz_mapping
+        // WHERE
+        //   (
+        //     (                                                                 -|
+        //       _Student_Course_mapping._Student_courseList_id = Student.id      |
+        //       AND                                                              |
+        //       _Student_Course_mapping._Course_id = Course.id                   | Corresponding
+        //     )                                                                  | to "Course" table
+        //     OR                                                                 | containing 2 fields
+        //     (                                                                  |
+        //       _Student_Course_mapping._Student_favoriteCourses_id = Student.id | Use "OR" between
+        //       AND                                                              | each field
+        //       _Student_Course_mapping._Course_id = Course.id                   |
+        //     )                                                                 -|
+        //   )
+        //   AND
+        //   (
+        //     (                                                                 -|
+        //       _Student_Clazz_mapping._Student_clazz_id = Student.id            | Corresponding
+        //       AND                                                              | to "Clazz" table
+        //       _Student_Clazz_mapping._Clazz_id = Clazz.id                      | containing 1 field
+        //     )                                                                 -|
+        //   )
+        //   AND (
+        //     {Custom where clause}
+        //   );
+
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT * FROM ").append(tableInfo.mName);
+
+        // Key: tableB (aka table of the elem class of a field
+        // Value: where clause builder
+        Map<String, StringBuilder> mappingWhereBuilderMap = new HashMap<>();
+
+        for (Map.Entry<String, ObjectColumnInfo> entry : tableInfo.mObjectColumnMap.entrySet()) {
+            String field = entry.getKey();
+            ObjectColumnInfo oci = entry.getValue();
+
+            String tableB = TableInfo.nameOf(oci.mElemClass);
+            String mappingTable = getMappingTableName(tableInfo.mName, tableB);
+
+            StringBuilder mappingWhereBuilder;
+            if (!mappingWhereBuilderMap.containsKey(tableB)) {
+                sqlBuilder.append(" LEFT JOIN ").append(tableB)
+                        .append(" LEFT JOIN ").append(mappingTable);
+                mappingWhereBuilder = new StringBuilder();
+                mappingWhereBuilderMap.put(tableB, mappingWhereBuilder);
+            } else {
+                mappingWhereBuilder = mappingWhereBuilderMap.get(tableB);
+            }
+
+            mappingWhereBuilder.append(mappingWhereBuilder.length() == 0 ? "" : " OR ")
+                    .append("(")
+                    .append(mappingTable).append(".").append(getMappingTableColumnName(tableInfo.mName, field))
+                    .append(" = ").append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID)
+                    .append(" AND ")
+                    .append(mappingTable).append(".").append(getMappingTableColumnName(tableB, null))
+                    .append(" = ").append(tableB).append(".").append(TableInfo.COLUMN_ID)
+                    .append(")");
+        }
+
+        sqlBuilder.append(" WHERE ");
+        boolean first = true;
+        for (StringBuilder mappingWhereBuilder : mappingWhereBuilderMap.values()) {
+            sqlBuilder.append(first ? "" : " AND ")
+                    .append("(")
+                    .append(mappingWhereBuilder)
+                    .append(")");
+            first = false;
+        }
+
+        sqlBuilder.append(first ? "" : " AND ")
+                .append("(")
+                .append(condition.build(tableInfo.mName))
+                .append(")");
+
+        sqlBuilder.append(" ORDER BY ").append(orderBuilder);
+        sqlBuilder.append(";");
+        return new Pair<>(sqlBuilder.toString(), condition.getArgs());
     }
 }

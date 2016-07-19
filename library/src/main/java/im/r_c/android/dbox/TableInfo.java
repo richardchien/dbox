@@ -19,7 +19,7 @@ class TableInfo {
     static final String COLUMN_ID = "id";
 
     /**
-     * Table name
+     * Table name.
      */
     String mName;
 

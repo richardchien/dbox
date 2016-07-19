@@ -67,6 +67,10 @@ public class DBox<T> {
         return box;
     }
 
+    public DBoxQuery<T> find(DBoxCondition condition) {
+        return new DBoxQuery<>(mDb, mTableInfo, condition);
+    }
+
     /**
      * Save or update (if already exists) an object.
      * <p>

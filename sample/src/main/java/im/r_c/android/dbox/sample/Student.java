@@ -1,6 +1,7 @@
 package im.r_c.android.dbox.sample;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import im.r_c.android.dbox.annotation.Column;
@@ -76,7 +77,11 @@ class Student {
 
         if (id != student.id) return false;
         if (name != null ? !name.equals(student.name) : student.name != null) return false;
-        return courseList != null ? courseList.equals(student.courseList) : student.courseList == null;
+        if (courseList != null ? !courseList.equals(student.courseList) : student.courseList != null)
+            return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equalTo
+        if (!Arrays.equals(favoriteCourses, student.favoriteCourses)) return false;
+        return clazz != null ? clazz.equals(student.clazz) : student.clazz == null;
 
     }
 
@@ -85,6 +90,8 @@ class Student {
         int result = (int) (id ^ (id >>> 32));
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (courseList != null ? courseList.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(favoriteCourses);
+        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
         return result;
     }
 
@@ -94,6 +101,8 @@ class Student {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", courseList=" + courseList +
+                ", favoriteCourses=" + Arrays.toString(favoriteCourses) +
+                ", clazz=" + clazz +
                 '}';
     }
 }
