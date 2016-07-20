@@ -278,22 +278,32 @@ class SQLBuilder {
                     .append(")");
         }
 
-        sqlBuilder.append(" WHERE ");
+        StringBuilder fullWhereBuilder = new StringBuilder();
         boolean first = true;
         for (StringBuilder mappingWhereBuilder : mappingWhereBuilderMap.values()) {
-            sqlBuilder.append(first ? "" : " AND ")
+            fullWhereBuilder.append(first ? "" : " AND ")
                     .append("(")
                     .append(mappingWhereBuilder)
                     .append(")");
             first = false;
         }
 
-        sqlBuilder.append(first ? "" : " AND ")
-                .append("(")
-                .append(condition.build(tableInfo.mName))
-                .append(")");
+        String where = condition.build(tableInfo.mName);
+        if (where.length() > 0) {
+            fullWhereBuilder.append(first ? "" : " AND ")
+                    .append("(")
+                    .append(where)
+                    .append(")");
+        }
 
-        sqlBuilder.append(" ORDER BY ").append(orderBuilder);
+        if (fullWhereBuilder.length() > 0) {
+            sqlBuilder.append(" WHERE ").append(fullWhereBuilder);
+        }
+
+        sqlBuilder.append(" ORDER BY ").append(orderBuilder)
+                .append(orderBuilder.length() == 0 ? "" : ", ")
+                // Always order by id at the lowest priority
+                .append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID);
         sqlBuilder.append(";");
         return new Pair<>(sqlBuilder.toString(), condition.getArgs());
     }

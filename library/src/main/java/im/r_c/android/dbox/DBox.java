@@ -67,6 +67,10 @@ public class DBox<T> {
         return box;
     }
 
+    public DBoxQuery<T> findAll() {
+        return find(new DBoxCondition());
+    }
+
     public DBoxQuery<T> find(DBoxCondition condition) {
         return new DBoxQuery<>(mDb, mTableInfo, condition);
     }

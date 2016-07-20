@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         n = 100 + r.nextInt(20);
         for (int i = 0; i < n; i++) {
             Student stu = new Student();
-            stu.setName("Student " + i);
+            stu.setName("Student " + r.nextInt(1000));
             stu.setClazz(clzList.get(r.nextInt(clzList.size())));
             int crsCount = 4 + r.nextInt(4);
             int start = r.nextInt(crsList.size() - crsCount + 1);
@@ -119,5 +119,17 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
+
+//        List<Course> list = DBox.of(Course.class)
+//                .findAll()
+//                .orderByDesc("name")
+//                .orderBy("id")
+//                .results()
+//                .some(new DBoxResults.Filter<Course>() {
+//                    @Override
+//                    public boolean filter(Course course) {
+//                        return true;
+//                    }
+//                });
     }
 }
