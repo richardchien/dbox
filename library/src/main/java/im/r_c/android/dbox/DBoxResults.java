@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Richard Chien
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package im.r_c.android.dbox;
 
 import android.database.Cursor;
@@ -17,6 +33,13 @@ import java.util.Map;
 /**
  * DBox
  * Created by richard on 7/15/16.
+ * <p>
+ * Results of a query, supporting lazy loading.
+ * <p>
+ * Methods without "get" prefix will automatically close the results object
+ * after fetch the needed result. On the contrary, methods with "get" prefix
+ * won't do that, so that after they are called, the results object can be reused
+ * for any time until the {@link #close()} method is called.
  */
 public class DBoxResults<T> implements Iterable<T> {
     private TableInfo mTableInfo;
@@ -27,42 +50,96 @@ public class DBoxResults<T> implements Iterable<T> {
         mCursor = cursor;
     }
 
+    /**
+     * Get the first object of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @return first object or null if no results
+     */
     public T first() {
         T t = getFirst();
         close();
         return t;
     }
 
+    /**
+     * Get the last object of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @return last object or null if no results
+     */
     public T last() {
         T t = getLast();
         close();
         return t;
     }
 
+    /**
+     * Get the object at the specific index of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @param index index
+     * @return a object or null if no results
+     */
     public T one(int index) {
         T t = getOne(index);
         close();
         return t;
     }
 
+    /**
+     * Get some objects of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @param start start index
+     * @param count object count
+     * @return list of objects or empty list if no results
+     */
     public List<T> some(int start, int count) {
         List<T> list = getSome(start, count);
         close();
         return list;
     }
 
+    /**
+     * Get some objects of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @param filter filter
+     * @return list of objects or empty list if no results
+     */
     public List<T> some(Filter<T> filter) {
         List<T> list = getSome(filter);
         close();
         return list;
     }
 
+    /**
+     * Get all objects of the results.
+     * <p>
+     * The results object can't be used again after this method called.
+     *
+     * @return list of objects or empty list if no results
+     */
     public List<T> all() {
         List<T> list = getAll();
         close();
         return list;
     }
 
+    /**
+     * Get the first object of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @return first object or null if no results
+     */
     public T getFirst() {
         T t = null;
         if (moveToFirst()) {
@@ -72,6 +149,14 @@ public class DBoxResults<T> implements Iterable<T> {
         return t;
     }
 
+    /**
+     * Get the last object of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @return last object or null if no results
+     */
     public T getLast() {
         T t = null;
         if (moveToLast()) {
@@ -81,6 +166,15 @@ public class DBoxResults<T> implements Iterable<T> {
         return t;
     }
 
+    /**
+     * Get the object at the specific index of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @param index index
+     * @return a object or null if no results
+     */
     public T getOne(int index) {
         T t = null;
         if (moveTo(index)) {
@@ -90,6 +184,16 @@ public class DBoxResults<T> implements Iterable<T> {
         return t;
     }
 
+    /**
+     * Get some objects of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @param start start index
+     * @param count object count
+     * @return list of objects or empty list if no results
+     */
     public List<T> getSome(int start, int count) {
         List<T> list = new ArrayList<>();
         if (moveTo(start)) {
@@ -101,6 +205,15 @@ public class DBoxResults<T> implements Iterable<T> {
         return list;
     }
 
+    /**
+     * Get some objects of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @param filter filter
+     * @return list of objects or empty list if no results
+     */
     public List<T> getSome(Filter<T> filter) {
         List<T> list = new ArrayList<>();
         if (moveToFirst()) {
@@ -113,6 +226,14 @@ public class DBoxResults<T> implements Iterable<T> {
         return list;
     }
 
+    /**
+     * Get all objects of the results.
+     * <p>
+     * The results object can be used again after this method called,
+     * and {@link #close()} must be called if it won't be used again.
+     *
+     * @return list of objects or empty list if no results
+     */
     public List<T> getAll() {
         List<T> list = new ArrayList<>();
         if (moveToFirst()) {
@@ -123,16 +244,32 @@ public class DBoxResults<T> implements Iterable<T> {
         return list;
     }
 
+    /**
+     * Close the results object.
+     * <p>
+     * MUST and ONLY need to be called if you are getting result
+     * using the methods start with "get", e.g. {@link #getAll()}.
+     */
     public void close() {
         if (!mCursor.isClosed()) {
             mCursor.close();
         }
     }
 
+    /**
+     * Move the cursor to the beginning of the first object.
+     *
+     * @return succeeded or not
+     */
     private boolean moveToFirst() {
         return mCursor.moveToFirst();
     }
 
+    /**
+     * Move the cursor to the beginning of the last object.
+     *
+     * @return succeeded or not
+     */
     private boolean moveToLast() {
         if (mCursor.moveToLast()) {
             long lastId, id = getId();
@@ -149,6 +286,11 @@ public class DBoxResults<T> implements Iterable<T> {
         return false;
     }
 
+    /**
+     * Move the cursor to the beginning of the object at the specific index.
+     *
+     * @return succeeded or not
+     */
     private boolean moveTo(int index) {
         if (mCursor.moveToFirst()) {
             long lastId, id = getId();
@@ -174,6 +316,11 @@ public class DBoxResults<T> implements Iterable<T> {
         return false;
     }
 
+    /**
+     * Get the id of the current position of cursor.
+     *
+     * @return id
+     */
     private long getId() {
         return mCursor.getLong(mCursor.getColumnIndex(TableInfo.COLUMN_ID));
     }
@@ -183,6 +330,11 @@ public class DBoxResults<T> implements Iterable<T> {
         return new ResultsIterator<>(mTableInfo, mCursor);
     }
 
+    /**
+     * Implement an iterator class for lazy loading.
+     *
+     * @param <T> type of object
+     */
     private static class ResultsIterator<T> implements Iterator<T> {
         private TableInfo mTableInfo;
         private Cursor mCursor;
@@ -415,6 +567,11 @@ public class DBoxResults<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Determine an object should be skipped or not.
+     *
+     * @param <T> type of object
+     */
     public interface Filter<T> {
         boolean filter(T t);
     }

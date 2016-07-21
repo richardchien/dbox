@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Richard Chien
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package im.r_c.android.dbox;
 
 import java.util.ArrayList;
@@ -6,6 +22,9 @@ import java.util.List;
 /**
  * DBox
  * Created by richard on 7/15/16.
+ * <p>
+ * Build a condition that will act as the where clause
+ * in a query.
  */
 public class DBoxCondition {
     private List<Builder> mBuilderList;
@@ -179,6 +198,12 @@ public class DBoxCondition {
         return this;
     }
 
+    /**
+     * Build the full condition where clause.
+     *
+     * @param table the table that the conditions act on
+     * @return where clause
+     */
     String build(String table) {
         if (mGroupDepth != 0) {
             throw new IllegalStateException("There are " + mGroupDepth + " groups haven't been ended.");
@@ -200,11 +225,21 @@ public class DBoxCondition {
         return whereClauseBuilder.toString();
     }
 
+    /**
+     * Get arguments that should be bound to the where clause.
+     * Must be called after {@link #build(String)}.
+     *
+     * @return arguments
+     */
     String[] getArgs() {
         String[] args = new String[mArgList.size()];
         return mArgList.toArray(args);
     }
 
+    /**
+     * Make it easy for different conditions
+     * to be built uniformly.
+     */
     private interface Builder {
         String build(String table);
     }
