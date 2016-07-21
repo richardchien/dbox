@@ -26,10 +26,11 @@ class Student {
     private Course[] favoriteCourses;
 
     @ObjectColumn(Clazz.class)
-    private Clazz clazz;
+    private List<Clazz> clazzList;
 
     public Student() {
         courseList = new ArrayList<>();
+        clazzList = new ArrayList<>();
     }
 
     public long getId() {
@@ -60,12 +61,20 @@ class Student {
         this.favoriteCourses = favoriteCourses;
     }
 
-    public Clazz getClazz() {
-        return clazz;
+//    public Clazz getClazz() {
+//        return clazz;
+//    }
+//
+//    public void setClazz(Clazz clazz) {
+//        this.clazz = clazz;
+//    }
+
+    public boolean addClazz(Clazz clazz) {
+        return clazzList.add(clazz);
     }
 
-    public void setClazz(Clazz clazz) {
-        this.clazz = clazz;
+    public boolean removeClazz(Clazz clazz) {
+        return clazzList.remove(clazz);
     }
 
     @Override
@@ -79,9 +88,9 @@ class Student {
         if (name != null ? !name.equals(student.name) : student.name != null) return false;
         if (courseList != null ? !courseList.equals(student.courseList) : student.courseList != null)
             return false;
-        // Probably incorrect - comparing Object[] arrays with Arrays.equalTo
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(favoriteCourses, student.favoriteCourses)) return false;
-        return clazz != null ? clazz.equals(student.clazz) : student.clazz == null;
+        return clazzList != null ? clazzList.equals(student.clazzList) : student.clazzList == null;
 
     }
 
@@ -91,7 +100,7 @@ class Student {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (courseList != null ? courseList.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(favoriteCourses);
-        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
+        result = 31 * result + (clazzList != null ? clazzList.hashCode() : 0);
         return result;
     }
 
@@ -102,7 +111,7 @@ class Student {
                 ", name='" + name + '\'' +
                 ", courseList=" + courseList +
                 ", favoriteCourses=" + Arrays.toString(favoriteCourses) +
-                ", clazz=" + clazz +
+                ", clazzList=" + clazzList +
                 '}';
     }
 }

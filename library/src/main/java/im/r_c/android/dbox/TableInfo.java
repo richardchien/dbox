@@ -24,6 +24,11 @@ class TableInfo {
     String mName;
 
     /**
+     * Table class.
+     */
+    Class<?> mClass;
+
+    /**
      * Key: name of instance field,
      * Value: column info.
      */
@@ -44,6 +49,7 @@ class TableInfo {
     static TableInfo of(Class<?> clz) {
         TableInfo ti = new TableInfo();
         ti.mName = nameOf(clz);
+        ti.mClass = clz;
 
         Field[] fields = clz.getDeclaredFields();
         ti.mColumnMap = new HashMap<>();

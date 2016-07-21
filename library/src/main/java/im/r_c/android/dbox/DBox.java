@@ -168,7 +168,7 @@ public class DBox<T> {
                         if (o == null) {
                             break;
                         }
-                        handleObjectMapping(fieldName, idA, o, oci.mElemClass);
+                        handleObjectMapping(fieldName, -1, idA, o, oci.mElemClass);
                         break;
                     }
                     case ObjectColumnInfo.TYPE_OBJECT_ARRAY: {
@@ -181,7 +181,7 @@ public class DBox<T> {
                             if (o == null) {
                                 continue;
                             }
-                            handleObjectMapping(fieldName, idA, o, oci.mElemClass);
+                            handleObjectMapping(fieldName, i, idA, o, oci.mElemClass);
                         }
                         break;
                     }
@@ -190,11 +190,12 @@ public class DBox<T> {
                         if (list == null || list.size() == 0) {
                             break;
                         }
-                        for (Object o : list) {
+                        for (int i = 0; i < list.size(); i++) {
+                            Object o = list.get(i);
                             if (o == null) {
                                 continue;
                             }
-                            handleObjectMapping(fieldName, idA, o, oci.mElemClass);
+                            handleObjectMapping(fieldName, i, idA, o, oci.mElemClass);
                         }
                         break;
                     }
@@ -328,12 +329,12 @@ public class DBox<T> {
             String fieldName = entry.getKey();
 
             mDb.delete(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB),
-                    SQLBuilder.getMappingTableColumnName(mTableInfo.mName, fieldName) + " = ?",
+                    SQLBuilder.getMappingTableIdColumn(mTableInfo.mName, fieldName) + " = ?",
                     new String[]{String.valueOf(id)});
         }
     }
 
-    private void handleObjectMapping(String field, long idA, Object objB, Class<?> clzB) throws Exception {
+    private void handleObjectMapping(String field, int index, long idA, Object objB, Class<?> clzB) throws Exception {
         long idB = getId(objB, clzB);
         if (idB <= 0) {
             throw new Exception();
@@ -341,7 +342,7 @@ public class DBox<T> {
 
         String tableB = TableInfo.nameOf(clzB);
         if (mDb.insert(SQLBuilder.getMappingTableName(mTableInfo.mName, tableB), null,
-                SQLBuilder.buildMappingContentValues(field, mTableInfo.mName, idA, tableB, idB)) <= 0) {
+                SQLBuilder.buildMappingContentValues(field, index, mTableInfo.mName, idA, tableB, idB)) <= 0) {
             // Insert mapping failed
             throw new Exception();
         }

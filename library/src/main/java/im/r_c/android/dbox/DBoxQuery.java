@@ -1,5 +1,6 @@
 package im.r_c.android.dbox;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -46,13 +47,8 @@ public class DBoxQuery<T> {
         Pair<String, String[]> pair = SQLBuilder.query(mTableInfo, mCondition, mOrderBuilder);
         Log.d(TAG, pair.first);
         Log.d(TAG, Arrays.toString(pair.second));
-        Cursor cursor = mDb.rawQuery(pair.first, pair.second);
-        Log.d(TAG, "" + cursor.getCount());
-        Log.d(TAG, Arrays.toString(cursor.getColumnNames()));
-//        while (cursor.moveToNext()) {
-//            Log.d(TAG, "" + cursor.getString(cursor.getColumnIndex("Student.name")));
-//        }
-        cursor.close(); //TODO: finish it!
-        return new DBoxResults<>();
+        // This cursor will be closed in DBoxResults
+        @SuppressLint("Recycle") Cursor cursor = mDb.rawQuery(pair.first, pair.second);
+        return new DBoxResults<>(mTableInfo, cursor);
     }
 }

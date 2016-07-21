@@ -7,15 +7,12 @@ import java.util.List;
  * DBox
  * Created by richard on 7/15/16.
  */
-@SuppressWarnings("WeakerAccess")
 public class DBoxCondition {
-    //    private StringBuilder mConditionBuilder;
     private List<Builder> mBuilderList;
     private List<String> mArgList;
     private int mGroupDepth = 0;
 
     public DBoxCondition() {
-//        mConditionBuilder = new StringBuilder();
         mBuilderList = new ArrayList<>();
         mArgList = new ArrayList<>();
     }
@@ -45,11 +42,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition compare(final String column, final String operator, String value) {
-//        mConditionBuilder
-//                .append(column)
-//                .append(" ")
-//                .append(operator)
-//                .append(" ? ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -61,7 +53,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition not() {
-//        mConditionBuilder.append("NOT ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -72,7 +63,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition beginGroup() {
-//        mConditionBuilder.append("(");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -84,7 +74,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition endGroup() {
-//        mConditionBuilder.append(") ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -96,7 +85,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition and() {
-//        mConditionBuilder.append("AND ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -107,7 +95,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition or() {
-//        mConditionBuilder.append("OR ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -118,7 +105,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition between(final String column, String startValue, String endValue) {
-//        mConditionBuilder.append(column).append(" BETWEEN ? AND ? ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -143,11 +129,6 @@ public class DBoxCondition {
     }
 
     public DBoxCondition like(final String column, String pattern) {
-//        mConditionBuilder
-//                .append(column)
-//                .append(" LIKE '")
-//                .append(pattern)
-//                .append("' ");
         mBuilderList.add(new Builder() {
             @Override
             public String build(String table) {
@@ -159,19 +140,15 @@ public class DBoxCondition {
     }
 
     public DBoxCondition in(final String column, String... values) {
-//        mConditionBuilder.append(column).append(" IN (");
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("(");
         for (int i = 0; i < values.length; i++) {
             if (i != 0) {
-//                mConditionBuilder.append(", ");
                 stringBuilder.append(", ");
             }
-//            mConditionBuilder.append("?");
             stringBuilder.append("?");
             mArgList.add(values[i]);
         }
-//        mConditionBuilder.append(") ");
         stringBuilder.append(")");
         mBuilderList.add(new Builder() {
             @Override
@@ -206,7 +183,7 @@ public class DBoxCondition {
         if (mGroupDepth != 0) {
             throw new IllegalStateException("There are " + mGroupDepth + " groups haven't been ended.");
         }
-//        return mConditionBuilder.toString();
+
         StringBuilder whereClauseBuilder = new StringBuilder();
         String last = null;
         for (int i = 0; i < mBuilderList.size(); i++) {

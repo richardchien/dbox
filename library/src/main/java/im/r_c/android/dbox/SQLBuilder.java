@@ -3,9 +3,11 @@ package im.r_c.android.dbox;
 import android.content.ContentValues;
 import android.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -61,21 +63,6 @@ class SQLBuilder {
         return sqlBuilder.toString();
     }
 
-    static String createTable(String tableName, String... columns) {
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("CREATE TABLE IF NOT EXISTS ")
-                .append(tableName)
-                .append(" (");
-
-        for (int i = 0; i < columns.length; i++) {
-            sqlBuilder.append(i > 0 ? ", " : "")
-                    .append(columns[i]);
-        }
-
-        sqlBuilder.append(");");
-        return sqlBuilder.toString();
-    }
-
     static String[] createAllMappingTables(TableInfo tableInfo) {
         // Example:
         // TableA.field1 -> TableB
@@ -118,7 +105,11 @@ class SQLBuilder {
                 sqlBuilder.append(", ");
             }
             // Append column "_TableA_field1_id"
-            sqlBuilder.append(getMappingTableColumnName(tableInfo.mName, entry.getKey())).append(" INTEGER");
+            sqlBuilder.append(getMappingTableIdColumn(tableInfo.mName, entry.getKey())).append(" INTEGER");
+            if (entry.getValue().mType == ObjectColumnInfo.TYPE_OBJECT_ARRAY
+                    || entry.getValue().mType == ObjectColumnInfo.TYPE_OBJECT_LIST) {
+                sqlBuilder.append(", ").append(getMappingTableIndexColumn(tableInfo.mName, entry.getKey())).append(" INTEGER");
+            }
         }
 
         String[] sqls = new String[builderMap.size()];
@@ -126,10 +117,9 @@ class SQLBuilder {
         // Append last column "_TableB_id" for all mapping table
         for (Map.Entry<String, StringBuilder> entry : builderMap.entrySet()) {
             StringBuilder builder = entry.getValue();
-            builder.append(", ").append(getMappingTableColumnName(entry.getKey(), null)).append(" INTEGER NOT NULL);");
+            builder.append(", ").append(getMappingTableIdColumn(entry.getKey(), null)).append(" INTEGER NOT NULL);");
             sqls[n++] = builder.toString();
         }
-
         return sqls;
     }
 
@@ -137,8 +127,12 @@ class SQLBuilder {
         return "_" + tableA + "_" + tableB + "_mapping";
     }
 
-    static String getMappingTableColumnName(String table, String field) {
+    static String getMappingTableIdColumn(String table, String field) {
         return "_" + table + (field != null ? "_" + field : "") + "_id";
+    }
+
+    static String getMappingTableIndexColumn(String table, String field) {
+        return "_" + table + (field != null ? "_" + field : "") + "_index";
     }
 
     static ContentValues buildContentValues(TableInfo tableInfo, Object obj) {
@@ -199,10 +193,15 @@ class SQLBuilder {
         return values;
     }
 
-    static ContentValues buildMappingContentValues(String field, String tableA, long idA, String tableB, long idB) {
+    static ContentValues buildMappingContentValues(String field, int index, String tableA, long idA, String tableB, long idB) {
         ContentValues values = new ContentValues();
-        values.put(getMappingTableColumnName(tableA, field), idA);
-        values.put(getMappingTableColumnName(tableB, null), idB);
+        if (index >= 0) {
+            // index >= 0 means the field is an array or a list,
+            // so record the index.
+            values.put(getMappingTableIndexColumn(tableA, field), index);
+        }
+        values.put(getMappingTableIdColumn(tableA, field), idA);
+        values.put(getMappingTableIdColumn(tableB, null), idB);
         return values;
     }
 
@@ -230,7 +229,10 @@ class SQLBuilder {
         //   )
         //   AND (
         //     {Custom where clause}
-        //   );
+        //   )
+        // ORDER BY
+        //   Student.name, Student.id,
+        //   _Student_favoriteCourses_index, _Student_clazzList_index, _Student_courseList_index;
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append("SELECT * FROM ").append(tableInfo.mName);
@@ -238,6 +240,8 @@ class SQLBuilder {
         // Key: tableB (aka table of the elem class of a field
         // Value: where clause builder
         Map<String, StringBuilder> mappingWhereBuilderMap = new HashMap<>();
+
+        List<String> indexColumnList = new ArrayList<>();
 
         for (Map.Entry<String, ObjectColumnInfo> entry : tableInfo.mObjectColumnMap.entrySet()) {
             String field = entry.getKey();
@@ -256,8 +260,13 @@ class SQLBuilder {
             }
 
             mappingWhereBuilder.append(mappingWhereBuilder.length() == 0 ? "" : " OR ")
-                    .append(mappingTable).append(".").append(getMappingTableColumnName(tableInfo.mName, field))
+                    .append(mappingTable).append(".").append(getMappingTableIdColumn(tableInfo.mName, field))
                     .append(" = ").append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID);
+
+            if (oci.mType == ObjectColumnInfo.TYPE_OBJECT_ARRAY
+                    || oci.mType == ObjectColumnInfo.TYPE_OBJECT_LIST) {
+                indexColumnList.add(getMappingTableIndexColumn(tableInfo.mName, field));
+            }
         }
 
         StringBuilder fullWhereBuilder = new StringBuilder();
@@ -282,10 +291,16 @@ class SQLBuilder {
             sqlBuilder.append(" WHERE ").append(fullWhereBuilder);
         }
 
-        sqlBuilder.append(" ORDER BY ").append(orderBuilder)
-                .append(orderBuilder.length() == 0 ? "" : ", ")
-                // Always order by id at the lowest priority
+        sqlBuilder.append(" ORDER BY ")
+                .append(orderBuilder.length() == 0 ? "" : orderBuilder.append(", "))
+                // Always order by id after custom order and before index columns order
                 .append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID);
+
+        // Order by index columns
+        for (String column : indexColumnList) {
+            sqlBuilder.append(", ").append(column);
+        }
+
         sqlBuilder.append(";");
         return new Pair<>(sqlBuilder.toString(), condition.getArgs());
     }
