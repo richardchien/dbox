@@ -213,32 +213,20 @@ class SQLBuilder {
     static Pair<String, String[]> query(TableInfo tableInfo, DBoxCondition condition, StringBuilder orderBuilder) {
         // Example:
         //
-        // SELECT * FROM Student
-        //   LEFT JOIN Course
+        // SELECT
+        //
+        // FROM Student
         //   LEFT JOIN _Student_Course_mapping
-        //   LEFT JOIN Clazz
         //   LEFT JOIN _Student_Clazz_mapping
         // WHERE
         //   (
-        //     (                                                                 -|
-        //       _Student_Course_mapping._Student_courseList_id = Student.id      |
-        //       AND                                                              |
-        //       _Student_Course_mapping._Course_id = Course.id                   | Corresponding
-        //     )                                                                  | to "Course" table
-        //     OR                                                                 | containing 2 fields
-        //     (                                                                  |
-        //       _Student_Course_mapping._Student_favoriteCourses_id = Student.id | Use "OR" between
-        //       AND                                                              | each field
-        //       _Student_Course_mapping._Course_id = Course.id                   |
-        //     )                                                                 -|
+        //     _Student_Course_mapping._Student_courseList_id = Student.id      -| Corresponding to "Course" table, containing 2 fields
+        //     OR                                                                | Use "OR" between each field
+        //     _Student_Course_mapping._Student_favoriteCourses_id = Student.id -|
         //   )
         //   AND
         //   (
-        //     (                                                                 -|
-        //       _Student_Clazz_mapping._Student_clazz_id = Student.id            | Corresponding
-        //       AND                                                              | to "Clazz" table
-        //       _Student_Clazz_mapping._Clazz_id = Clazz.id                      | containing 1 field
-        //     )                                                                 -|
+        //     _Student_Clazz_mapping._Student_clazz_id = Student.id            -| Corresponding to "Clazz" table, containing 1 field
         //   )
         //   AND (
         //     {Custom where clause}
@@ -260,8 +248,7 @@ class SQLBuilder {
 
             StringBuilder mappingWhereBuilder;
             if (!mappingWhereBuilderMap.containsKey(tableB)) {
-                sqlBuilder.append(" LEFT JOIN ").append(tableB)
-                        .append(" LEFT JOIN ").append(mappingTable);
+                sqlBuilder.append(" LEFT JOIN ").append(mappingTable);
                 mappingWhereBuilder = new StringBuilder();
                 mappingWhereBuilderMap.put(tableB, mappingWhereBuilder);
             } else {
@@ -269,13 +256,8 @@ class SQLBuilder {
             }
 
             mappingWhereBuilder.append(mappingWhereBuilder.length() == 0 ? "" : " OR ")
-                    .append("(")
                     .append(mappingTable).append(".").append(getMappingTableColumnName(tableInfo.mName, field))
-                    .append(" = ").append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID)
-                    .append(" AND ")
-                    .append(mappingTable).append(".").append(getMappingTableColumnName(tableB, null))
-                    .append(" = ").append(tableB).append(".").append(TableInfo.COLUMN_ID)
-                    .append(")");
+                    .append(" = ").append(tableInfo.mName).append(".").append(TableInfo.COLUMN_ID);
         }
 
         StringBuilder fullWhereBuilder = new StringBuilder();
