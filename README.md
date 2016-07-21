@@ -6,6 +6,10 @@
 
 <a name="zh">
 
+API 文档：[http://richardchien.github.io/dbox-android/](http://richardchien.github.io/dbox-android/)
+
+完整的 README 即将到来……
+
 ## 另
 
 > 我用代码写成诗
@@ -21,6 +25,10 @@
 > ——某腊鸡
 
 <a name="en">
+
+API docs：[http://richardchien.github.io/dbox-android/](http://richardchien.github.io/dbox-android/)
+
+Full README is comming soon…
 
 ## BTW
 
