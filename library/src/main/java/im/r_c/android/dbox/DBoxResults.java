@@ -33,13 +33,17 @@ import java.util.Map;
 /**
  * DBox
  * Created by richard on 7/15/16.
- * <p>
+ */
+
+/**
  * Results of a query, supporting lazy loading.
  * <p>
  * Methods without "get" prefix will automatically close the results object
  * after fetch the needed result. On the contrary, methods with "get" prefix
  * won't do that, so that after they are called, the results object can be reused
  * for any time until the {@link #close()} method is called.
+ *
+ * @param <T> type of object
  */
 public class DBoxResults<T> implements Iterable<T> {
     private TableInfo mTableInfo;

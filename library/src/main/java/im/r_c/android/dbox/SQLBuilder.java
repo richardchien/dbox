@@ -30,6 +30,7 @@ import java.util.Map;
  * DBox
  * Created by richard on 7/17/16.
  */
+
 class SQLBuilder {
     static String createTable(TableInfo tableInfo) {
         StringBuilder sqlBuilder = new StringBuilder();

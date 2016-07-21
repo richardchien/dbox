@@ -27,8 +27,12 @@ import java.util.Arrays;
 /**
  * DBox
  * Created by richard on 7/19/16.
- * <p>
+ */
+
+/**
  * Describe a query.
+ *
+ * @param <T> type of result object
  */
 public class DBoxQuery<T> {
     private static final String TAG = DBoxQuery.class.getSimpleName();

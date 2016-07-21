@@ -22,7 +22,9 @@ import java.util.List;
 /**
  * DBox
  * Created by richard on 7/15/16.
- * <p>
+ */
+
+/**
  * Build a condition that will act as the where clause
  * in a query.
  */

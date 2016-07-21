@@ -24,7 +24,9 @@ import java.lang.annotation.Target;
 /**
  * DBox
  * Created by richard on 7/16/16.
- * <p>
+ */
+
+/**
  * Mark an instance field as one that is an object
  * or a list of objects that is instance of another table class.
  */

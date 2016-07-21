@@ -23,6 +23,7 @@ import android.database.sqlite.SQLiteDatabase;
  * DBox
  * Created by richard on 7/17/16.
  */
+
 class DBUtils {
     static boolean isTableExists(SQLiteDatabase db, String tableName) {
         Cursor c = null;

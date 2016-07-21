@@ -24,7 +24,9 @@ import java.lang.annotation.Target;
 /**
  * DBox
  * Created by richard on 7/16/16.
- * <p>
+ */
+
+/**
  * Mark an instance field as a normal column.
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -28,7 +28,9 @@ import im.r_c.android.dbox.annotation.Table;
 /**
  * DBox
  * Created by richard on 7/16/16.
- * <p>
+ */
+
+/**
  * Stores database table info of a specific data class.
  */
 class TableInfo {
