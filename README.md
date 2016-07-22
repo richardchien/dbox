@@ -137,8 +137,6 @@ for (Student stu : results) {
 >
 > 你会永远伴我同行
 >
-> 无论是朋友还是恋人般亲密
->
 > ——某腊鸡
 
 ---------
@@ -274,7 +272,5 @@ Please check [Wiki](https://github.com/richardchien/dbox-android/wiki) and [API 
 > praying
 >
 > You will forever stand by me
->
-> no matter friendship or love we in
 >
 > — RC
