@@ -49,18 +49,18 @@ public class DBoxQuery<T> {
         mOrderBuilder = new StringBuilder();
     }
 
-    public DBoxQuery<T> orderBy(String... fields) {
-        for (String field : fields) {
+    public DBoxQuery<T> orderBy(String... columns) {
+        for (String column : columns) {
             mOrderBuilder.append(mOrderBuilder.length() == 0 ? "" : ", ")
-                    .append(mTableInfo.mName).append(".").append(field);
+                    .append(mTableInfo.mName).append(".").append(column);
         }
         return this;
     }
 
-    public DBoxQuery<T> orderByDesc(String... fields) {
-        for (String field : fields) {
+    public DBoxQuery<T> orderByDesc(String... columns) {
+        for (String column : columns) {
             mOrderBuilder.append(mOrderBuilder.length() == 0 ? "" : ", ")
-                    .append(mTableInfo.mName).append(".").append(field).append(" DESC");
+                    .append(mTableInfo.mName).append(".").append(column).append(" DESC");
         }
         return this;
     }
