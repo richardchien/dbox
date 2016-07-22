@@ -26,55 +26,50 @@ class Student {
     private Course[] favoriteCourses;
 
     @ObjectColumn(Clazz.class)
-    private List<Clazz> clazzList;
+    private Clazz clazz;
 
-    public Student() {
+    Student() {
         courseList = new ArrayList<>();
-        clazzList = new ArrayList<>();
     }
 
-    public long getId() {
+    long getId() {
         return id;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 
-    public boolean addCourse(Course course) {
+    boolean addCourse(Course course) {
         return courseList.add(course);
     }
 
-    public boolean removeCourse(Course course) {
+    boolean removeCourse(Course course) {
         return courseList.remove(course);
     }
 
-    public Course[] getFavoriteCourses() {
+    List<Course> getCourseList() {
+        return courseList;
+    }
+
+    Course[] getFavoriteCourses() {
         return favoriteCourses;
     }
 
-    public void setFavoriteCourses(Course[] favoriteCourses) {
+    void setFavoriteCourses(Course[] favoriteCourses) {
         this.favoriteCourses = favoriteCourses;
     }
 
-//    public Clazz getClazz() {
-//        return clazz;
-//    }
-//
-//    public void setClazz(Clazz clazz) {
-//        this.clazz = clazz;
-//    }
-
-    public boolean addClazz(Clazz clazz) {
-        return clazzList.add(clazz);
+    Clazz getClazz() {
+        return clazz;
     }
 
-    public boolean removeClazz(Clazz clazz) {
-        return clazzList.remove(clazz);
+    void setClazz(Clazz clazz) {
+        this.clazz = clazz;
     }
 
     @Override
@@ -90,7 +85,7 @@ class Student {
             return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(favoriteCourses, student.favoriteCourses)) return false;
-        return clazzList != null ? clazzList.equals(student.clazzList) : student.clazzList == null;
+        return clazz != null ? clazz.equals(student.clazz) : student.clazz == null;
 
     }
 
@@ -100,7 +95,7 @@ class Student {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (courseList != null ? courseList.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(favoriteCourses);
-        result = 31 * result + (clazzList != null ? clazzList.hashCode() : 0);
+        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
         return result;
     }
 
@@ -111,7 +106,7 @@ class Student {
                 ", name='" + name + '\'' +
                 ", courseList=" + courseList +
                 ", favoriteCourses=" + Arrays.toString(favoriteCourses) +
-                ", clazzList=" + clazzList +
+                ", clazz=" + clazz +
                 '}';
     }
 }

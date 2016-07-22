@@ -14,22 +14,22 @@ class Clazz {
     @Column(notNull = true)
     private String name;
 
-    public Clazz() {
+    Clazz() {
     }
 
-    public Clazz(String name) {
+    Clazz(String name) {
         this.name = name;
     }
 
-    public long getId() {
+    long getId() {
         return id;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
     }
 

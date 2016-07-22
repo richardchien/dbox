@@ -378,6 +378,9 @@ public class DBox<T> {
     private long getId(Object obj, Class<?> clz) {
         try {
             Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
             return f.getLong(obj);
         } catch (Exception e) {
             e.printStackTrace();
@@ -388,6 +391,9 @@ public class DBox<T> {
     private void setId(Object obj, Class<?> clz, long id) {
         try {
             Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
+            if (!f.isAccessible()) {
+                f.setAccessible(true);
+            }
             f.setLong(obj, id);
         } catch (Exception e) {
             e.printStackTrace();
