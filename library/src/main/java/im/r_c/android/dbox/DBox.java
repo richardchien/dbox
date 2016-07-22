@@ -189,10 +189,6 @@ public class DBox<T> {
                 ObjectColumnInfo oci = entry.getValue();
                 String fieldName = entry.getKey();
 
-                if (!oci.mField.isAccessible()) {
-                    oci.mField.setAccessible(true);
-                }
-
                 switch (oci.mType) {
                     case ObjectColumnInfo.TYPE_OBJECT: {
                         Object o = oci.mField.get(obj);
@@ -382,9 +378,6 @@ public class DBox<T> {
     private long getId(Object obj, Class<?> clz) {
         try {
             Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
             return f.getLong(obj);
         } catch (Exception e) {
             e.printStackTrace();
@@ -395,9 +388,6 @@ public class DBox<T> {
     private void setId(Object obj, Class<?> clz, long id) {
         try {
             Field f = clz.getDeclaredField(TableInfo.COLUMN_ID);
-            if (!f.isAccessible()) {
-                f.setAccessible(true);
-            }
             f.setLong(obj, id);
         } catch (Exception e) {
             e.printStackTrace();

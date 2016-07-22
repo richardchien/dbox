@@ -16,8 +16,9 @@
 
 package im.r_c.android.dbox;
 
+import android.support.v4.util.ArrayMap;
+
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,8 +71,8 @@ class TableInfo {
         ti.mClass = clz;
 
         Field[] fields = clz.getDeclaredFields();
-        ti.mColumnMap = new HashMap<>();
-        ti.mObjectColumnMap = new HashMap<>();
+        ti.mColumnMap = new ArrayMap<>();
+        ti.mObjectColumnMap = new ArrayMap<>();
         boolean hasIdField = false;
         for (Field field : fields) {
             String fieldName = field.getName();
@@ -84,6 +85,11 @@ class TableInfo {
                 ci.mPrimaryKey = true;
                 ci.mAutoIncrement = true;
                 ci.mField = field;
+
+                if (!ci.mField.isAccessible()) {
+                    ci.mField.setAccessible(true);
+                }
+
                 ti.mColumnMap.put(fieldName, ci);
                 hasIdField = true;
                 continue;
@@ -188,6 +194,11 @@ class ColumnInfo {
         ci.mPrimaryKey = column.primaryKey();
         ci.mAutoIncrement = column.autoIncrement();
         ci.mField = field;
+
+        if (!ci.mField.isAccessible()) {
+            ci.mField.setAccessible(true);
+        }
+
         return ci;
     }
 }
@@ -244,6 +255,10 @@ class ObjectColumnInfo {
 
         oci.mElemClass = elemType;
         oci.mField = field;
+
+        if (!oci.mField.isAccessible()) {
+            oci.mField.setAccessible(true);
+        }
 
         return oci;
     }

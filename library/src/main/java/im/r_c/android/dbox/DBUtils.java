@@ -30,9 +30,12 @@ class DBUtils {
         boolean exists = false;
         try {
             c = db.query(tableName, null, null, null, null, null, null);
-            c.close();
             exists = true;
         } catch (Exception ignored) {
+        } finally {
+            if (c != null && c.isClosed()) {
+                c.close();
+            }
         }
         return exists;
     }

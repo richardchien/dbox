@@ -17,11 +17,11 @@
 package im.r_c.android.dbox;
 
 import android.content.ContentValues;
+import android.support.v4.util.ArrayMap;
 import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -88,18 +88,21 @@ class SQLBuilder {
 
         // Key: table name
         // Value: mapping table create sql builder
-        Map<String, StringBuilder> builderMap = new HashMap<>();
+        Map<String, StringBuilder> builderMap = new ArrayMap<>();
 
         // Key: object column info object (aka an instance field)
         // Value: table name
-        Map<ObjectColumnInfo, String> tableNameMap = new HashMap<>();
+        Map<ObjectColumnInfo, String> tableNameMap = new ArrayMap<>();
 
         for (Map.Entry<String, ObjectColumnInfo> entry : tableInfo.mObjectColumnMap.entrySet()) {
+            String field = entry.getKey();
+            ObjectColumnInfo oci = entry.getValue();
+
             // Get table info of TableB or TableC
-            String tn = tableNameMap.get(entry.getValue());
+            String tn = tableNameMap.get(oci);
             if (tn == null) {
-                tn = TableInfo.nameOf(entry.getValue().mElemClass);
-                tableNameMap.put(entry.getValue(), tn);
+                tn = TableInfo.nameOf(oci.mElemClass);
+                tableNameMap.put(oci, tn);
             }
 
             // Get mapping table create sql builder
@@ -122,10 +125,10 @@ class SQLBuilder {
                 sqlBuilder.append(", ");
             }
             // Append column "_TableA_field1_id"
-            sqlBuilder.append(getMappingTableIdColumn(tableInfo.mName, entry.getKey())).append(" INTEGER");
-            if (entry.getValue().mType == ObjectColumnInfo.TYPE_OBJECT_ARRAY
-                    || entry.getValue().mType == ObjectColumnInfo.TYPE_OBJECT_LIST) {
-                sqlBuilder.append(", ").append(getMappingTableIndexColumn(tableInfo.mName, entry.getKey())).append(" INTEGER");
+            sqlBuilder.append(getMappingTableIdColumn(tableInfo.mName, field)).append(" INTEGER");
+            if (oci.mType == ObjectColumnInfo.TYPE_OBJECT_ARRAY
+                    || oci.mType == ObjectColumnInfo.TYPE_OBJECT_LIST) {
+                sqlBuilder.append(", ").append(getMappingTableIndexColumn(tableInfo.mName, field)).append(" INTEGER");
             }
         }
 
@@ -160,9 +163,6 @@ class SQLBuilder {
             }
 
             try {
-                if (!ci.mField.isAccessible()) {
-                    ci.mField.setAccessible(true);
-                }
                 switch (ci.mType) {
                     case ColumnInfo.TYPE_BOOLEAN:
                         values.put(ci.mName, ci.mField.getBoolean(obj) ? 1 : 0);
@@ -256,7 +256,7 @@ class SQLBuilder {
 
         // Key: tableB (aka table of the elem class of a field
         // Value: where clause builder
-        Map<String, StringBuilder> mappingWhereBuilderMap = new HashMap<>();
+        Map<String, StringBuilder> mappingWhereBuilderMap = new ArrayMap<>();
 
         List<String> indexColumnList = new ArrayList<>();
 

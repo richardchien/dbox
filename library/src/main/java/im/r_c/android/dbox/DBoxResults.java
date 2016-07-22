@@ -370,10 +370,6 @@ public class DBoxResults<T> implements Iterable<T> {
                 // no matter which position the cursor is,
                 // so just read the first position.
                 for (ColumnInfo ci : mTableInfo.mColumnMap.values()) {
-                    if (!ci.mField.isAccessible()) {
-                        ci.mField.setAccessible(true);
-                    }
-
                     int columnIdx = mCursor.getColumnIndex(ci.mName);
                     switch (ci.mType) {
                         case ColumnInfo.TYPE_BOOLEAN:
@@ -453,10 +449,6 @@ public class DBoxResults<T> implements Iterable<T> {
                                 continue;
                             }
 
-                            if (!oci.mField.isAccessible()) {
-                                oci.mField.setAccessible(true);
-                            }
-
                             String objKey = tableB + "#" + idB;
                             Object obj = objCache.get(objKey);
                             if (obj != null) {
@@ -521,10 +513,6 @@ public class DBoxResults<T> implements Iterable<T> {
                     if (oci.mType == ObjectColumnInfo.TYPE_OBJECT) {
                         // We have set single object field, so skip it
                         continue;
-                    }
-
-                    if (!oci.mField.isAccessible()) {
-                        oci.mField.setAccessible(true);
                     }
 
                     String field = entry.getKey();
