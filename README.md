@@ -9,6 +9,8 @@
 
 用于 Android 的轻量级 ORM 库，支持 boolean、byte、short、int、long、float、double、String、Date、byte[] 基本类型，以及 Model 对象之间一对一、一对多、多对一、多对多的关系。使用比较简单，不过性能可能不是很好（其实我还没测过性能），尤其在一个 Model 对象中又包含其它 Model 对象的情况比较多时，涉及到较多的跨表查询，不过 DBox 也支持懒加载，可以减轻一些性能上的问题。
 
+因为到目前为止，这个项目还并没有很成熟，所以可能存在各种未知的 Bug，请不要再生产环境中使用，如果你在使用中遇到了任何问题，请发 Issue 或 PR，我们共同改进。
+
 Wiki：[https://github.com/richardchien/dbox-android/wiki](https://github.com/richardchien/dbox-android/wiki)
 
 API 文档：[http://richardchien.github.io/dbox-android/](http://richardchien.github.io/dbox-android/)
@@ -144,6 +146,8 @@ for (Student stu : results) {
 <a name="en">
 
 An ORM framework for Android, supporting both basic types like boolean, byte, short, int, long, float, double, String, Date, byte[], and complex relationships among different model objects. It also supports lazy loading.
+
+Since this framework is not quite stable yet, any unknown bugs could be observed. Don't use this in production environment. If any problems occur to you, issues or PRs are welcome.
 
 Wiki：[https://github.com/richardchien/dbox-android/wiki](https://github.com/richardchien/dbox-android/wiki)
 
