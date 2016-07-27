@@ -70,6 +70,22 @@ class Student {
 
 另外，每个 Model 类必须有一个参数为空的构造函数，如果没有添加其它构造函数，则 Java 默认会添加一个空的构造函数，保持默认即可。
 
+### 初始化 DBox
+
+在使用 DBox 之前需要先调用 `DBox.init(context, DATABASE_FILENAME);`，一般在 `onCreate()` 方法里面调用，比如：
+
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    DBox.init(this, "Test.db");
+}
+```
+
+由于 `init()` 方法其实就只是设置了一下 context 和数据库文件名，因此如果需要存到其它数据库文件，只需要重新调用一次这个函数即可。
+
 ### 保存、更新、删除对象
 
 ```java
@@ -205,6 +221,22 @@ There must be a field named `id` and of type `long`, and its value shouldn't be 
 Be limited by the structure of tables, there should be at least one field of basic types besides the id field. And, the id field don't need to be marked with `@Column` annotation.
 
 In addition, every model class should have a constructor with empty parameter list.
+
+### Initialize DBox
+
+You should call `DBox.init(context, DATABASE_FILENAME);` before using DBox, typically in `onCreate()`. For instance:
+
+```java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    DBox.init(this, "Test.db");
+}
+```
+
+Because the `init()` just set context and database name and do nothing else, you can call it for more than one time to change database.
 
 ### Save、update、remove
 
