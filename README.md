@@ -1,4 +1,4 @@
-# DBox for Android
+# DBox
 
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](LICENSE)
 [![Release](https://jitpack.io/v/richardchien/dbox-android.svg)](https://jitpack.io/#richardchien/dbox-android)
