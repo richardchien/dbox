@@ -11,9 +11,9 @@
 
 因为到目前为止，这个项目还并没有很成熟，所以可能存在各种未知的 Bug，请不要再生产环境中使用，如果你在使用中遇到了任何问题，请发 Issue 或 PR，我们共同改进。
 
-Wiki：[https://github.com/richardchien/dbox-android/wiki](https://github.com/richardchien/dbox-android/wiki)
+Wiki：[https://github.com/richardchien/dbox/wiki](https://github.com/richardchien/dbox/wiki)
 
-API 文档：[http://richardchien.github.io/dbox-android/](http://richardchien.github.io/dbox-android/)
+API 文档：[http://richardchien.github.io/dbox/](http://richardchien.github.io/dbox/)
 
 ## 基本用法
 
@@ -163,9 +163,9 @@ An ORM framework for Android, supporting both basic types like boolean, byte, sh
 
 Since this framework is not quite stable yet, any unknown bugs could be observed. Don't use this in production environment. If any problems occur to you, issues or PRs are welcome.
 
-Wiki：[https://github.com/richardchien/dbox-android/wiki](https://github.com/richardchien/dbox-android/wiki)
+Wiki：[https://github.com/richardchien/dbox/wiki](https://github.com/richardchien/dbox/wiki)
 
-API docs：[http://richardchien.github.io/dbox-android/](http://richardchien.github.io/dbox-android/)
+API docs：[http://richardchien.github.io/dbox/](http://richardchien.github.io/dbox/)
 
 ## Basic Usage
 
