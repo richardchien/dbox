@@ -294,15 +294,3 @@ You can use `findAll()` to find all objects or use `find()` to find some specifi
 ## More Information
 
 Please check [Wiki](https://github.com/richardchien/dbox-android/wiki) and [API docs](http://richardchien.github.io/dbox-android/) for more information.
-
-## BTW
-
-> I wrote code into poet
->
-> and name it after you
->
-> praying
->
-> You will forever stand by me
->
-> — RC
