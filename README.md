@@ -143,18 +143,6 @@ for (Student stu : results) {
 
 详细文档请查阅 [Wiki](https://github.com/richardchien/dbox-android/wiki) 和 [API 文档](http://richardchien.github.io/dbox-android/)。
 
-## 另
-
-> 我用代码写成诗
->
-> 以你命名
->
-> 只为祈祷
->
-> 你会永远伴我同行
->
-> ——某腊鸡
-
 ---------
 
 <a name="en">
